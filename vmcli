@@ -10,7 +10,7 @@ for i in "$@"; do
 	-b|--boot)
 		shift
 		cp /usr/share/OVMF/OVMF_VARS.fd ./OVMF_VARS.fd
-		
+
 		qemu-system-x86_64 \
 		  -enable-kvm \
 		  -cpu host \
@@ -21,6 +21,27 @@ for i in "$@"; do
 		  -drive if=pflash,format=raw,file=./OVMF_VARS.fd \
 		  -cdrom ~/Downloads/archlinux-x86_64.iso \
 		  -drive file=arch.qcow2,format=qcow2 \
+		  -boot menu=on \
+		  -display sdl,gl=on
+		exit 0
+		;;
+	-bu|--boot-usb)
+		shift
+		USB_DEVICE="$1"
+		shift
+		cp /usr/share/OVMF/OVMF_VARS.fd ./OVMF_VARS.fd
+
+		qemu-system-x86_64 \
+		  -enable-kvm \
+		  -cpu host \
+		  -smp 4 \
+		  -m 4096 \
+		  -nic user \
+		  -drive if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE.fd \
+		  -drive if=pflash,format=raw,file=./OVMF_VARS.fd \
+		  -drive file="$USB_DEVICE",format=raw,if=virtio \
+		  -drive file=arch.qcow2,format=qcow2 \
+		  -boot menu=on \
 		  -display sdl,gl=on
 		exit 0
 		;;
