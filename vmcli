@@ -1,0 +1,47 @@
+#!/bin/sh
+trap 'echo "Caught kb interrupt, exiting..."; exit 0' 2
+for i in "$@"; do
+  case $i in
+    -r|--reset)
+		shift
+		qemu-img create -f qcow2 "$@" 
+      	exit 0 
+      	;;
+	-b|--boot)
+		shift
+		cp /usr/share/OVMF/OVMF_VARS.fd ./OVMF_VARS.fd
+		
+		qemu-system-x86_64 \
+		  -enable-kvm \
+		  -cpu host \
+		  -smp 4 \
+		  -m 4096 \
+		  -nic user \
+		  -drive if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE.fd \
+		  -drive if=pflash,format=raw,file=./OVMF_VARS.fd \
+		  -cdrom ~/Downloads/archlinux-x86_64.iso \
+		  -drive file=arch.qcow2,format=qcow2 \
+		  -display sdl,gl=on
+		exit 0
+		;;
+	-s|--start)
+		shift
+		qemu-system-x86_64 \
+		  -enable-kvm \
+		  -cpu host \
+		  -smp 4 \
+		  -m 4096 \
+		  -nic user \
+		  -drive if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE.fd \
+		  -drive if=pflash,format=raw,file=./OVMF_VARS.fd \
+		  -drive file=arch.qcow2,format=qcow2 \
+		  -display sdl,gl=on
+		exit 0
+		;;
+		# catch all
+	    *)
+		echo "$@" && echo "Unknown opt"
+		exit 1
+      	;;
+  esac
+done
